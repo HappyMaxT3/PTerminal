@@ -1,4 +1,6 @@
 /.DS_Store
+**<AndroidSdkPath>/
+**<JavaSdkPath>/
 /<AndroidSdkPath>/.DS_Store
 /<AndroidSdkPath>/build-tools/34.0.0/renderscript/lib/bc/x86/
 /<AndroidSdkPath>/build-tools/34.0.0/renderscript/lib/blas/x86/
