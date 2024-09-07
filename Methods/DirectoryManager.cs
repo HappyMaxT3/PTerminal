@@ -45,30 +45,28 @@ namespace PTerminal.Methods
             }
             catch (Exception ex)
             {
-                var label = new Label
-                {
-                    Text = $"Error: {ex.Message}",
-                    TextColor = Colors.Red,
-                    FontSize = 14
-                };
-                stackLayout.Children.Add(label);
+                await ShowErrorAsync(stackLayout, $"Error: {ex.Message}");
             }
         }
+
 
         public static void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             if (requestCode == RequestCodeSelectDirectory && resultCode == Result.Ok && data != null)
             {
                 currentDirectoryUri = data.Data;
-                var contentResolver = Android.App.Application.Context.ContentResolver;
 
+                var contentResolver = Platform.CurrentActivity.ContentResolver;
                 if (currentDirectoryUri != null)
                 {
-                    contentResolver.TakePersistableUriPermission(currentDirectoryUri, 
+                    // Сохраняем разрешения на доступ к URI
+                    contentResolver.TakePersistableUriPermission(currentDirectoryUri,
                         data.Flags & (ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission));
                 }
             }
         }
+
+
 
         public static async Task ListDirectoryContentsAsync(StackLayout stackLayout, int typingInterval)
         {
@@ -84,17 +82,28 @@ namespace PTerminal.Methods
                 if (directory != null && directory.IsDirectory)
                 {
                     var files = directory.ListFiles();
-                    foreach (var file in files)
+                    if (files != null)
                     {
-                        var label = new Label
+                        foreach (var file in files)
                         {
-                            Text = file.IsDirectory ? $"📁 {file.Name}" : $"📄 {file.Name}",
-                            TextColor = Colors.White,
-                            FontSize = 14
-                        };
-                        stackLayout.Children.Add(label);
-                        await Task.Delay(typingInterval);
+                            var label = new Label
+                            {
+                                Text = file.IsDirectory ? $"📁 {file.Name}" : $"📄 {file.Name}",
+                                TextColor = Colors.White,
+                                FontSize = 14
+                            };
+                            stackLayout.Children.Add(label);
+                            await Task.Delay(typingInterval);
+                        }
                     }
+                    else
+                    {
+                        await ShowErrorAsync(stackLayout, "No files found in the directory.");
+                    }
+                }
+                else
+                {
+                    await ShowErrorAsync(stackLayout, "Invalid directory.");
                 }
             }
             catch (Exception ex)
@@ -102,6 +111,7 @@ namespace PTerminal.Methods
                 await ShowErrorAsync(stackLayout, $"Error: {ex.Message}");
             }
         }
+
 
         public static async Task<bool> DeleteFileAsync(Android.Net.Uri fileUri, StackLayout stackLayout)
         {
@@ -134,13 +144,19 @@ namespace PTerminal.Methods
             return false;
         }
 
+
+
         private static async Task ShowErrorAsync(StackLayout stackLayout, string errorMessage)
         {
             var label = new Label
             {
                 Text = errorMessage,
                 TextColor = Colors.Red,
-                FontSize = 14
+                FontFamily = "TerminalFont",
+                FontSize = 14,
+                LineHeight = 1,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start
             };
             stackLayout.Children.Add(label);
             await Task.Delay(1000);

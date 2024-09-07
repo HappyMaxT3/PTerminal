@@ -24,11 +24,12 @@ namespace PTerminal
         private async Task Initialize()
         {
             stackLayout = this.FindByName<StackLayout>("stackLayoutTerminal"); 
-            //Проверка и запрос разрешений
+
             if (DeviceInfo.Platform == DevicePlatform.Android)
             {
                 await DirectoryManager.RequestFilePermissionsAsync();
             }
+            
             await WorkingProcess();
         }
 
@@ -102,7 +103,11 @@ namespace PTerminal
             {
                 Text = message,
                 TextColor = Colors.Red,
-                FontSize = 14
+                FontFamily = "TerminalFont",
+                FontSize = 14,
+                LineHeight = 1,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start
             };
             stackLayout.Children.Add(label);
             await Task.Delay(1000);
