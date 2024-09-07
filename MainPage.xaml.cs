@@ -24,11 +24,11 @@ namespace PTerminal
         private async Task Initialize()
         {
             stackLayout = this.FindByName<StackLayout>("stackLayoutTerminal"); 
-            // Проверка и запрос разрешений
-            // if (DeviceInfo.Platform == DevicePlatform.Android)
-            // {
-            //     await DirectoryManager.RequestFilePermissionsAsync();
-            // }
+            //Проверка и запрос разрешений
+            if (DeviceInfo.Platform == DevicePlatform.Android)
+            {
+                await DirectoryManager.RequestFilePermissionsAsync();
+            }
             await WorkingProcess();
         }
 
@@ -44,6 +44,7 @@ namespace PTerminal
             var parts = command.Split(' '); 
             var mainCommand = parts[0];
             var argument = parts.Length > 1 ? parts[1] : null;
+
             switch (mainCommand)
             {
                 case "man":
@@ -56,32 +57,27 @@ namespace PTerminal
                     await ClearTerminalCommand.ClearTerminal(stackLayout, TypingInterval); 
                     break;
                 case "ls":
-                    await DirectoryManager.ListDirectoryContents(stackLayout, currentDirectory, TypingInterval);
+                    await DirectoryManager.ListDirectoryContentsAsync(stackLayout, TypingInterval);
                     break;
-                // case "cd": 
-                //     if (argument != null && DirectoryManager.ChangeDirectory(ref currentDirectory, argument))
-                //     {
-                //         await DirectoryManager.ListDirectoryContents(stackLayout, currentDirectory, TypingInterval);
-                //     }
-                //     else
-                //     {
-                //         await DirectoryManager.ShowDirectoryError(stackLayout, currentDirectory);
-                //     }
-                //     break;
-                // case "rm": 
-                //     if (argument != null && await DirectoryManager.DeleteFileAsync(argument))
-                //     {
-                //         await DirectoryManager.ListDirectoryContents(stackLayout, currentDirectory, TypingInterval);
-                //     }
-                //     else
-                //     {
-                //         await DirectoryManager.ShowDirectoryError(stackLayout, currentDirectory);
-                //     }
-                //     break;
-                case "pck":
-                    await DirectoryManager.PickFileAsync(stackLayout, TypingInterval);
-                    stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });
+                case "cd": 
+                    await DirectoryManager.SelectDirectoryAsync(stackLayout); 
                     break;
+                case "rm":
+                    if (!string.IsNullOrEmpty(argument))
+                    {
+                        Android.Net.Uri fileUri = Android.Net.Uri.Parse(argument);
+                        await DirectoryManager.DeleteFileAsync(fileUri, stackLayout);
+                    }
+                    else
+                    {
+                        await ShowError("Please provide a file URI to delete.");
+                    }
+                    break;
+
+                // case "pck":
+                //     await DirectoryManager.PickFileAsync(stackLayout, TypingInterval);
+                //     stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });
+                //     break;
                 default:
                     var label = new Label
                     {
@@ -99,6 +95,17 @@ namespace PTerminal
             }
 
             await InputCommand.TakeCommandAsync(stackLayout, name, Commands); 
+        }
+        private async Task ShowError(string message)
+        {
+            var label = new Label
+            {
+                Text = message,
+                TextColor = Colors.Red,
+                FontSize = 14
+            };
+            stackLayout.Children.Add(label);
+            await Task.Delay(1000);
         }
     }
 }
