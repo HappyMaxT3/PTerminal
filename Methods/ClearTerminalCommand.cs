@@ -33,6 +33,8 @@ namespace PTerminal.Methods
                 label.Text += c;
                 await Task.Delay(typingInterval);
             }
+
+            stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });
         }
     }
 }
