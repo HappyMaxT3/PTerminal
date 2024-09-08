@@ -9,13 +9,15 @@ namespace PTerminal.Methods
     {
         private static readonly List<string> _manual = new List<string>
         {
-            " NAME         - (ORIGIN) COMMANDS",
+            "   WARNING:    Some commands (cd, ls, rm) require permissions. For the app work correctly, go to settings and give the necessary permissions to PTerminal.",
+            "   NAME       - (ORIGIN) COMMANDS",
             "    man        - (Manual - Linux) Show the entire manual, which explains all the commands and their meaning.",
             "    clear      - (Clear - supported by many OS) Clear terminal completely.",
             "    lshw       - (List Hardware - Linux) Find out the all available info about system.",
-            "    cd         - (Change Directory - supported by many OS) Change user's work directory. Android users should select a folder in device Explorer after typing 'cd'. The command needs permissions in settings.",
-            "    ls         - (List - supported by many OS) Shows directories and files in user's work directory. The command needs permissions in settings.",
-            "    rm 'smth'  - (Remove - supported by many OS) Delete selected file. The command needs permissions in settings."
+            "    cd         - (Change Directory - supported by many OS) Change user's work directory. Android users should select a folder in device Explorer after typing 'cd'.",
+            "    ls         - (List - supported by many OS) Shows directories and files in user's work directory.",
+            "    rm 'smth'  - (Remove - supported by many OS) Delete selected file."
+            
         };
 
         public static async Task Manuals(StackLayout stackLayout, int typingInterval)
@@ -26,7 +28,6 @@ namespace PTerminal.Methods
                 var firstPart = line.Length > 14 ? line.Substring(0, 14) : line;
                 var secondPart = line.Length > 14 ? line.Substring(14) : string.Empty;
 
-                // Create label with formatted text
                 var label = new Label
                 {
                     FormattedText = formattedString,
