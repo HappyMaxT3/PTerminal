@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Android.Content;
@@ -6,13 +7,14 @@ using Android.Provider;
 using AndroidX.DocumentFile.Provider;
 using Android.App;
 using Android.OS;
+using PTerminal.Methods;
 
 namespace PTerminal.Methods
 {
     public static class DirectoryManager
     {
-        private static Android.Net.Uri? currentDirectoryUri; 
-        private const int RequestCodeSelectDirectory = 42; 
+        private static Android.Net.Uri? _currentDirectoryUri;
+        private const int RequestCodeSelectDirectory = 42;
 
         public static async Task RequestFilePermissionsAsync()
         {
@@ -30,11 +32,7 @@ namespace PTerminal.Methods
 
             if (statusRead != PermissionStatus.Granted || statusWrite != PermissionStatus.Granted)
             {
-                //await Microsoft.Maui.Controls.Application.Current.MainPage.DisplayAlert(
-                    // "Permission Denied", 
-                    // "Storage access is required for this app to function properly.", 
-                    // "OK"
-                //);
+                // await DisplayAlert("Permission Denied", "Storage access is required.", "OK");
             }
         }
 
@@ -43,14 +41,15 @@ namespace PTerminal.Methods
             try
             {
                 var intent = new Intent(Intent.ActionOpenDocumentTree);
-                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission | ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+                intent.AddFlags(ActivityFlags.GrantPersistableUriPermission |
+                                ActivityFlags.GrantReadUriPermission |
+                                ActivityFlags.GrantWriteUriPermission);
 
-                var activity = Platform.CurrentActivity;
-                activity.StartActivityForResult(intent, RequestCodeSelectDirectory);
+                Platform.CurrentActivity.StartActivityForResult(intent, RequestCodeSelectDirectory);
             }
             catch (Exception ex)
             {
-                await ShowErrorAsync(stackLayout, $"Error: {ex.Message}");
+                await ErrorHandler.ShowErrorAsync(stackLayout, $"App-error: {ex.Message}", MainPage.Typing_Interval);
             }
         }
 
@@ -58,12 +57,13 @@ namespace PTerminal.Methods
         {
             if (requestCode == RequestCodeSelectDirectory && resultCode == Result.Ok && data != null)
             {
-                currentDirectoryUri = data.Data;
-
-                var contentResolver = Platform.CurrentActivity.ContentResolver;
-                if (currentDirectoryUri != null)
+                _currentDirectoryUri = data.Data;
+                if (_currentDirectoryUri != null)
                 {
-                    contentResolver.TakePersistableUriPermission(currentDirectoryUri, data.Flags & (ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission));
+                    Platform.CurrentActivity.ContentResolver.TakePersistableUriPermission(
+                        _currentDirectoryUri,
+                        data.Flags & (ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission)
+                    );
                 }
             }
         }
@@ -76,143 +76,103 @@ namespace PTerminal.Methods
 
         public static async Task ListDirectoryContentsAsync(StackLayout stackLayout, int typingInterval)
         {
-            if (currentDirectoryUri == null)
+            if (_currentDirectoryUri == null)
             {
-                await ShowErrorAsync(stackLayout, "No directory selected.");
+                await ErrorHandler.ShowErrorAsync(stackLayout, "No directory selected >:(", typingInterval);
                 return;
             }
 
             try
             {
-                var directoryName = GetDirectoryName(currentDirectoryUri);
-                var directoryLabel = new Label
+                var directory = DocumentFile.FromTreeUri(Platform.CurrentActivity, _currentDirectoryUri);
+                if (directory == null || !directory.IsDirectory)
                 {
-                    Text = $"📁 {directoryName}",
+                    await ErrorHandler.ShowErrorAsync(stackLayout, "Invalid directory >:(", typingInterval);
+                    return;
+                }
+
+                stackLayout.Children.Add(new Label
+                {
+                    Text = $"📁 {GetDirectoryName(_currentDirectoryUri)}",
                     TextColor = Colors.LightYellow,
                     FontSize = 15,
                     FontFamily = "TerminalFont",
-                    LineHeight = 1,
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Start
-                };
-                stackLayout.Children.Add(directoryLabel);
+                    LineHeight = 1
+                });
 
-                var directory = DocumentFile.FromTreeUri(Platform.CurrentActivity, currentDirectoryUri);
-                if (directory != null && directory.IsDirectory)
+                var files = directory.ListFiles();
+                if (files == null || files.Length == 0)
                 {
-                    var files = directory.ListFiles();
-                    if (files != null)
-                    {
-                        foreach (var file in files)
-                        {
-                            var label = new Label
-                            {
-                                Text = file.IsDirectory ? $"|- 📁 {file.Name}" : $"|- 📄 {file.Name}",
-                                TextColor = Colors.AntiqueWhite,
-                                FontSize = 15,
-                                FontFamily = "TerminalFont",
-                                LineHeight = 1,
-                                HorizontalOptions = LayoutOptions.Start,
-                                VerticalOptions = LayoutOptions.Start
-                            };
-                            stackLayout.Children.Add(label);
-                            await Task.Delay(typingInterval);
-                        }
-                    }
-                    else
-                    {
-                        await ShowErrorAsync(stackLayout, "No files found in the directory.");
-                    }
+                    await ErrorHandler.ShowErrorAsync(stackLayout, "No files found...", typingInterval);
+                    return;
                 }
-                else
+
+                foreach (var file in files)
                 {
-                    await ShowErrorAsync(stackLayout, "Invalid directory.");
+                    stackLayout.Children.Add(new Label
+                    {
+                        Text = file.IsDirectory ? $"|- 📁 {file.Name}" : $"|- 📄 {file.Name}",
+                        TextColor = Colors.AntiqueWhite,
+                        FontSize = 15,
+                        FontFamily = "TerminalFont",
+                        LineHeight = 1
+                    });
+                    await Task.Delay(typingInterval);
                 }
             }
             catch (Exception ex)
             {
-                await ShowErrorAsync(stackLayout, $"Error: {ex.Message}");
+                await ErrorHandler.ShowErrorAsync(stackLayout, $"App-error: {ex.Message}", typingInterval);
             }
             stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });
         }
 
         public static async Task<bool> DeleteFileAsync(string fileName, StackLayout stackLayout)
         {
+            if (_currentDirectoryUri == null)
+            {
+                await ErrorHandler.ShowErrorAsync(stackLayout, "No directory selected.", MainPage.Typing_Interval);
+                return false;
+            }
+
             try
             {
-                if (currentDirectoryUri == null)
-                {
-                    await ShowErrorAsync(stackLayout, "No directory selected.");
-                    return false;
-                }
-
-                var directory = DocumentFile.FromTreeUri(Platform.CurrentActivity, currentDirectoryUri);
+                var directory = DocumentFile.FromTreeUri(Platform.CurrentActivity, _currentDirectoryUri);
                 if (directory == null || !directory.IsDirectory)
                 {
-                    await ShowErrorAsync(stackLayout, "Invalid directory.");
+                    await ErrorHandler.ShowErrorAsync(stackLayout, "Invalid directory >:(", MainPage.Typing_Interval);
                     return false;
                 }
 
-                var files = directory.ListFiles();
-                if (files != null)
+                var fileToDelete = directory.ListFiles()?.FirstOrDefault(file => file.Name == fileName && file.IsFile);
+                if (fileToDelete == null)
                 {
-                    foreach (var file in files)
-                    {
-                        if (file.Name == fileName && file.IsFile)
-                        {
-                            bool success = file.Delete();
-                            if (success)
-                            {
-                                var label = new Label
-                                {
-                                    Text = $"File {fileName} deleted successfully.",
-                                    TextColor = Colors.GreenYellow,
-                                    FontSize = 15,
-                                    FontFamily = "TerminalFont",
-                                    LineHeight = 1,
-                                    HorizontalOptions = LayoutOptions.Start,
-                                    VerticalOptions = LayoutOptions.Start
-                                };
-                                stackLayout.Children.Add(label);
-                                return true;
-                            }
-                            else
-                            {
-                                await ShowErrorAsync(stackLayout, $"Error: Unable to delete file {fileName}.");
-                                return false;
-                            }
-                        }
-                    }
+                    await ErrorHandler.ShowErrorAsync(stackLayout, $"File {fileName} not found :(", MainPage.Typing_Interval);
+                    return false;
                 }
-                await ShowErrorAsync(stackLayout, $"Error: File {fileName} not found.");
+
+                bool success = fileToDelete.Delete();
+                if (success)
+                {
+                    stackLayout.Children.Add(new Label
+                    {
+                        Text = $"File {fileName} deleted successfully.",
+                        TextColor = Colors.GreenYellow,
+                        FontSize = 15,
+                        FontFamily = "TerminalFont",
+                        LineHeight = 1
+                    });
+                    return true;
+                }
+
+                await ErrorHandler.ShowErrorAsync(stackLayout, $"Unable to delete file {fileName}.", MainPage.Typing_Interval);
                 return false;
             }
             catch (Exception ex)
             {
-                await ShowErrorAsync(stackLayout, $"App-error: {ex.Message}");
+                await ErrorHandler.ShowErrorAsync(stackLayout, $"App-error: {ex.Message}", MainPage.Typing_Interval);
                 return false;
             }
-        }
-
-        private static async Task ShowErrorAsync(StackLayout stackLayout, string errorMessage)
-        {
-            var label = new Label
-            {
-                Text = errorMessage,
-                TextColor = Colors.Red,
-                FontFamily = "TerminalFont",
-                FontSize = 14,
-                LineHeight = 1,
-                HorizontalOptions = LayoutOptions.Start,
-                VerticalOptions = LayoutOptions.Start
-            };
-            stackLayout.Children.Add(label);
-            await Task.Delay(1000);
-        }
-
-        internal static async Task DeleteFileAsync(Android.Net.Uri? fileUri, StackLayout? stackLayout)
-        {
-            throw new NotImplementedException();
         }
     }
 }

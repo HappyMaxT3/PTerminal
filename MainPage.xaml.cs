@@ -4,7 +4,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using PTerminal.Methods;
 
-//dotnet build -f:net8.0-android -c:Release - build comm
+//  dotnet build -f:net8.0-android -c:Release 
+// |` terminal string to build .apk
+// bin/Release/.../smth.apk
 
 namespace PTerminal
 {
@@ -21,7 +23,6 @@ namespace PTerminal
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
             _ = Initialize();
-
         }
 
         [Obsolete]
@@ -40,7 +41,7 @@ namespace PTerminal
             }
             else
             {
-                await ShowError("StackLayout is not initialized.");
+                await ErrorHandler.ShowErrorAsync(stackLayout, "StackLayout is not initialized.", Typing_Interval);
             }
         }
 
@@ -52,13 +53,12 @@ namespace PTerminal
                 await Greetings.TypeGreetingsAsync(stackLayout, Typing_Interval); 
                 await InputCommand.TakeCommandAsync(stackLayout, name, Commands); 
             }
-            
         }
 
         [Obsolete]
         private async Task Commands(string command)
         {
-            command = command.Trim().ToLower();
+            command = command.Trim();
             var parts = command.Split(' '); 
             var mainCommand = parts[0];
             var argument = parts.Length > 1 ? parts[1] : null;
@@ -88,11 +88,11 @@ namespace PTerminal
                     }
                     else
                     {
-                        await ShowError("Please provide a file URI to delete.");
+                        await ErrorHandler.ShowErrorAsync(stackLayout, "Please provide a file URI to delete.", Typing_Interval);
                     }
                     break;
                 // case "pck":
-                //     await DirectoryManager.PickFileAsync(stackLayout, TypingInterval);
+                //     await DirectoryManager.PickFileAsync(stackLayout, Typing_Interval);
                 //     stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });
                 //     break;
                 default:
@@ -112,21 +112,6 @@ namespace PTerminal
             }
 
             await InputCommand.TakeCommandAsync(stackLayout, name, Commands); 
-        }
-        private async Task ShowError(string message)
-        {
-            var label = new Label
-            {
-                Text = message,
-                TextColor = Colors.Red,
-                FontFamily = "TerminalFont",
-                FontSize = 14,
-                LineHeight = 1,
-                HorizontalOptions = LayoutOptions.Start,
-                VerticalOptions = LayoutOptions.Start
-            };
-            stackLayout.Children.Add(label);
-            await Task.Delay(1000);
         }
     }
 }

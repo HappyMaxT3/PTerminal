@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>  
         </Grid.RowDefinitions>
 
-        <AbsoluteLayout BackgroundColor="#2c2c2c" 
+        <AbsoluteLayout BackgroundColor="#18181a" 
                         Grid.Row="0"
                         Padding="3"
                         VerticalOptions="FillAndExpand"
