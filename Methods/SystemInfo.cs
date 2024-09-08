@@ -112,7 +112,7 @@ namespace PTerminal.Methods
             var label = new Label
             {
                 Text = string.Empty,
-                TextColor = Colors.White,
+                TextColor = Colors.GhostWhite,
                 FontFamily = "TerminalFont",
                 FontSize = 14,
                 LineHeight = 1.2,

@@ -4,23 +4,27 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using PTerminal.Methods;
 
+//dotnet build -f:net8.0-android -c:Release - build comm
+
 namespace PTerminal
 {
     public partial class MainPage : ContentPage
     {
-        private StackLayout stackLayout; 
+        private StackLayout? stackLayout; 
         public string currentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         private readonly string name = DeviceInfo.Name;
-        public const int TypingInterval = 1;
+        public const int Typing_Interval = 1;
 
+        [Obsolete]
         public MainPage()
         {
             InitializeComponent();
             NavigationPage.SetHasNavigationBar(this, false);
-            Initialize();
+            _ = Initialize();
 
         }
 
+        [Obsolete]
         private async Task Initialize()
         {
             stackLayout = this.FindByName<StackLayout>("stackLayoutTerminal"); 
@@ -29,16 +33,29 @@ namespace PTerminal
             {
                 await DirectoryManager.RequestFilePermissionsAsync();
             }
-            
-            await WorkingProcess();
+
+            if (stackLayout != null)
+            {
+                await WorkingProcess();
+            }
+            else
+            {
+                await ShowError("StackLayout is not initialized.");
+            }
         }
 
+        [Obsolete]
         public async Task WorkingProcess()
         {
-            await Greetings.TypeGreetingsAsync(stackLayout, TypingInterval); 
-            await InputCommand.TakeCommandAsync(stackLayout, name, Commands); 
+            if(stackLayout != null)
+            {
+                await Greetings.TypeGreetingsAsync(stackLayout, Typing_Interval); 
+                await InputCommand.TakeCommandAsync(stackLayout, name, Commands); 
+            }
+            
         }
 
+        [Obsolete]
         private async Task Commands(string command)
         {
             command = command.Trim().ToLower();
@@ -49,16 +66,16 @@ namespace PTerminal
             switch (mainCommand)
             {
                 case "man":
-                    await Manual.Manuals(stackLayout, TypingInterval); 
+                    await Manual.Manuals(stackLayout, Typing_Interval); 
                     break;
                 case "lshw":
-                    await SystemInfo.SystemInfoOut(stackLayout, TypingInterval);
+                    await SystemInfo.SystemInfoOut(stackLayout, Typing_Interval);
                     break;
                 case "clear":
-                    await ClearTerminalCommand.ClearTerminal(stackLayout, TypingInterval); 
+                    await ClearTerminalCommand.ClearTerminal(stackLayout, Typing_Interval); 
                     break;
                 case "ls":
-                    await DirectoryManager.ListDirectoryContentsAsync(stackLayout, TypingInterval);
+                    await DirectoryManager.ListDirectoryContentsAsync(stackLayout, Typing_Interval);
                     break;
                 case "cd": 
                     await DirectoryManager.SelectDirectoryAsync(stackLayout); 
@@ -67,14 +84,13 @@ namespace PTerminal
                     if (!string.IsNullOrEmpty(argument))
                     {
                         Android.Net.Uri fileUri = Android.Net.Uri.Parse(argument);
-                        await DirectoryManager.DeleteFileAsync(fileUri, stackLayout);
+                        _ = await DirectoryManager.DeleteFileAsync(fileUri.ToString(), stackLayout);
                     }
                     else
                     {
                         await ShowError("Please provide a file URI to delete.");
                     }
                     break;
-
                 // case "pck":
                 //     await DirectoryManager.PickFileAsync(stackLayout, TypingInterval);
                 //     stackLayout.Children.Add(new Label { Text = "", FontSize = 8 });

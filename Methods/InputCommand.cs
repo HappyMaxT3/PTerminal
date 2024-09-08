@@ -7,9 +7,10 @@ namespace PTerminal.Methods
 {
     public static class InputCommand
     {
-        private static Entry _currentEntry;
+        private static Entry? _currentEntry;
 
-        public static async Task TakeCommandAsync(StackLayout stackLayout, string name, Func<string, Task> onCommandEntered)
+        [Obsolete]
+        public static Task TakeCommandAsync(StackLayout stackLayout, string name, Func<string, Task> onCommandEntered)
         {
             if (_currentEntry != null)
             {
@@ -60,6 +61,7 @@ namespace PTerminal.Methods
             stackLayout.Children.Add(commandLayout);
 
             entryWithPrompt.Focus();
+            return Task.CompletedTask;
         }
     }
 }
