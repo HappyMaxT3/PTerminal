@@ -1,4 +1,3 @@
-
 namespace PTerminal 
 {
     public class CommandManager
@@ -7,6 +6,8 @@ namespace PTerminal
 
         public CommandManager()
         {
+            //all comands, ExecuteCommandAsync class instances
+
             _commands["man"] = new ManCommand();
             _commands["clear"] = new ClearCommand();
             _commands["cd"] = new CdCommand();

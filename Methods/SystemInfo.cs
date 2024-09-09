@@ -4,9 +4,6 @@ namespace PTerminal.Methods
     {
         private static string GetSystemInfo()
         {
-            // var processInfoService = DependencyService.Get<IProcessInfoService>();
-            // var processInfoList = processInfoService?.GetAllProcesses() ?? new List<string>();
-            // var processInfo = string.Join(Environment.NewLine, processInfoList);
 
             var systemInfo = new List<string>
             {
@@ -22,26 +19,10 @@ namespace PTerminal.Methods
                 $"▀▀▀▀▀▀▀  SCREEN SIZE: { GetScreenSize()}",
                 $"         REFRESH RATE: {GetRefreshRate()}",
                 $"         DPI: {GetDeviceDensity()}",
-                //$"   CPU USAGE: {GetCpuUsage()}%",
-                //$"   PROCESS INFO:\n{processInfo}"
             };
 
             return string.Join(Environment.NewLine, systemInfo);
         }
-
-        // private static string GetCpuUsage()
-        // {
-        //     try
-        //     {
-        //         var cpuUsageService = DependencyService.Get<ICpuUsageService>();
-        //         float cpuUsage = cpuUsageService?.GetCpuUsage() ?? 0;
-        //         return $"{cpuUsage:0.00}";
-        //     }
-        //     catch
-        //     {
-        //         return "N/A";
-        //     }
-        // }
 
         private static string GetBatteryState()
         {

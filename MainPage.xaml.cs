@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
-using PTerminal.Methods;
+﻿using PTerminal.Methods;
 
 //  dotnet build -f:net8.0-android -c:Release 
 // |` terminal string to build .apk
@@ -12,11 +8,11 @@ namespace PTerminal
 {
     public partial class MainPage : ContentPage
     {
-        private StackLayout? stackLayout; 
+        private StackLayout? stackLayout; // ? - can be null
 
         private CommandManager _commandManager;
         public string currentDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        private readonly string name = DeviceInfo.Name;
+        private readonly string name = DeviceInfo.Name; // assignment only at initialization
         public const int Typing_Interval = 1;
 
         [Obsolete]
@@ -31,6 +27,9 @@ namespace PTerminal
         [Obsolete]
         private async Task Initialize()
         {
+            //asynchronous methods block the interface (but doing) 
+            //when performing long operations
+
             stackLayout = this.FindByName<StackLayout>("stackLayoutTerminal"); 
 
             if (DeviceInfo.Platform == DevicePlatform.Android)
@@ -61,6 +60,8 @@ namespace PTerminal
         [Obsolete]
         private async Task Commands(string command)
         {
+            // take commands
+
             command = command.Trim();
             var parts = command.Split(' '); 
             var mainCommand = parts[0];

@@ -1,8 +1,3 @@
-using System;
-using System.Reflection.Emit;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
 namespace PTerminal.Methods
 {
     public static class InputCommand

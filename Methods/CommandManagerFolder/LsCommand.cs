@@ -1,4 +1,3 @@
-
 namespace PTerminal
 {
     public class LsCommand : Command
@@ -9,5 +8,3 @@ namespace PTerminal
         }
     }
 }
-
-

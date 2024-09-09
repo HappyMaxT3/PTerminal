@@ -1,13 +1,6 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
 using Android.Content;
-using Android.Provider;
 using AndroidX.DocumentFile.Provider;
 using Android.App;
-using Android.OS;
-using PTerminal.Methods;
 
 namespace PTerminal.Methods
 {
@@ -18,6 +11,7 @@ namespace PTerminal.Methods
 
         public static async Task RequestFilePermissionsAsync()
         {
+            //request file permissions
             var statusRead = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
             if (statusRead != PermissionStatus.Granted)
             {
@@ -40,6 +34,7 @@ namespace PTerminal.Methods
         {
             try
             {
+                //open explorer window
                 var intent = new Intent(Intent.ActionOpenDocumentTree);
                 intent.AddFlags(ActivityFlags.GrantPersistableUriPermission |
                                 ActivityFlags.GrantReadUriPermission |
@@ -55,13 +50,14 @@ namespace PTerminal.Methods
 
         public static void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
+            //method for successful directoru choose
+            //saving permissions
             if (requestCode == RequestCodeSelectDirectory && resultCode == Result.Ok && data != null)
             {
                 _currentDirectoryUri = data.Data;
                 if (_currentDirectoryUri != null)
                 {
-                    Platform.CurrentActivity.ContentResolver.TakePersistableUriPermission(
-                        _currentDirectoryUri,
+                    Platform.CurrentActivity.ContentResolver.TakePersistableUriPermission(_currentDirectoryUri,
                         data.Flags & (ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission)
                     );
                 }

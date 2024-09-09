@@ -1,7 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
 namespace PTerminal.Methods
 {
     public class ClearTerminalCommand
