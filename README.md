@@ -20,7 +20,7 @@ File commands require permissions. For the app work correctly, go to settings an
 # Installing
 
 ### App
-Android 11+ user should install ```.apk``` file and give the necessary permissions in settings. 
+Android 11+ user should install ```.apk``` file in a ```INSTALL_APP_FOLDER``` and give the necessary permissions in settings. 
 
 ### Source code
 To install the source code the programmer must have Visual Studio or VS Code with all the necessary SDK. Namely:
