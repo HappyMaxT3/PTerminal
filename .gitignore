@@ -1,5 +1,12 @@
 /.DS_Store
 **<AndroidSdkPath>/
+**build-tools/
+**emulator/
+**sources/
+**licenses/
+**Platforms/
+**.idea/
+**.knownPackages
 **<JavaSdkPath>/
 /<AndroidSdkPath>/.DS_Store
 /<AndroidSdkPath>/build-tools/34.0.0/renderscript/lib/bc/x86/
