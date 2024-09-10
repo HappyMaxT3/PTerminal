@@ -7,7 +7,7 @@ namespace PTerminal.Methods
     public static class DirectoryManager
     {
         private static Android.Net.Uri? _currentDirectoryUri;
-        private const int RequestCodeSelectDirectory = 42;
+        private const int RequestCodeSelectDirectory = 42; //request code
 
         public static async Task RequestFilePermissionsAsync()
         {
@@ -50,7 +50,7 @@ namespace PTerminal.Methods
 
         public static void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
-            //method for successful directoru choose
+            //method for successful directory choosing
             //saving permissions
             if (requestCode == RequestCodeSelectDirectory && resultCode == Result.Ok && data != null)
             {

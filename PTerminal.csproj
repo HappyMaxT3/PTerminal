@@ -6,6 +6,9 @@
     
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
 
+      <AndroidSdkDirectory>/Users/maxtolmachev/Library/Android/sdk</AndroidSdkDirectory>
+
+
     <OutputType>Exe</OutputType>
     <RootNamespace>PTerminal</RootNamespace>
     <UseMaui>true</UseMaui>
